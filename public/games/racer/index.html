@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Speed Drift Highway</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      background: #090d16;
+      color: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 12px;
+      overflow: hidden;
+    }
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 380px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .canvas-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 380px;
+      aspect-ratio: 3 / 4;
+      background: #111827;
+      border: 2px solid #334155;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      touch-action: none;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .overlay.active { opacity: 1; pointer-events: auto; }
+    .btn {
+      background: #f59e0b;
+      color: #000;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn:hover { background: #fbbf24; }
+    .hint {
+      margin-top: 10px;
+      font-size: 11px;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <div>SPEED: <strong id="speed-txt" style="color: #38bdf8;">120 MPH</strong></div>
+    <div>SCORE: <strong id="score-txt" style="color: #f59e0b;">0</strong></div>
+  </div>
+
+  <div class="canvas-wrap" id="racer-wrap">
+    <canvas id="c" width="360" height="480"></canvas>
+    <div class="overlay active" id="overlay">
+      <h1 id="title" style="font-size: 26px; color: #f59e0b; font-weight: 900;">SPEED DRIFT</h1>
+      <p id="sub" style="font-size: 13px; color: #94a3b8;">Dodge oncoming traffic & survive!</p>
+      <button class="btn" id="start-btn">START RACE</button>
+    </div>
+  </div>
+
+  <div class="hint">
+    [A]/[D] or Left/Right Arrows or Drag/Tilt on screen to steer!
+  </div>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const speedTxt = document.getElementById('speed-txt');
+    const scoreTxt = document.getElementById('score-txt');
+    const overlay = document.getElementById('overlay');
+    const title = document.getElementById('title');
+    const startBtn = document.getElementById('start-btn');
+
+    let isPlaying = false;
+    let score = 0;
+    let roadOffset = 0;
+    let speed = 7;
+
+    const car = {
+      x: 155,
+      y: 380,
+      w: 42,
+      h: 70,
+      speedX: 5.5,
+      left: false,
+      right: false
+    };
+
+    let enemies = [];
+    const LANES = [50, 115, 185, 255];
+    const ENEMY_COLORS = ['#38bdf8', '#22c55e', '#a855f7', '#ec4899', '#f97316'];
+
+    function startGame() {
+      score = 0;
+      speed = 7;
+      car.x = 155;
+      enemies = [];
+      overlay.classList.remove('active');
+      isPlaying = true;
+    }
+
+    function gameOver() {
+      isPlaying = false;
+      title.textContent = 'CRASHED!';
+      startBtn.textContent = 'RACE AGAIN';
+      overlay.classList.add('active');
+    }
+
+    window.addEventListener('keydown', e => {
+      if (['ArrowLeft', 'KeyA'].includes(e.code)) car.left = true;
+      if (['ArrowRight', 'KeyD'].includes(e.code)) car.right = true;
+    });
+
+    window.addEventListener('keyup', e => {
+      if (['ArrowLeft', 'KeyA'].includes(e.code)) car.left = false;
+      if (['ArrowRight', 'KeyD'].includes(e.code)) car.right = false;
+    });
+
+    const wrap = document.getElementById('racer-wrap');
+    wrap.addEventListener('pointermove', e => {
+      if (!isPlaying) return;
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.clientX - rect.left;
+      const scaleX = canvas.width / rect.width;
+      const targetX = clientX * scaleX - car.w / 2;
+      car.x = Math.max(30, Math.min(canvas.width - car.w - 30, targetX));
+    });
+
+    startBtn.onclick = startGame;
+
+    function loop() {
+      // Grass edges
+      ctx.fillStyle = '#14532d';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Asphalt Road
+      ctx.fillStyle = '#1f2937';
+      ctx.fillRect(25, 0, canvas.width - 50, canvas.height);
+
+      // Road edge borders
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(20, 0, 5, canvas.height);
+      ctx.fillRect(canvas.width - 25, 0, 5, canvas.height);
+
+      // Dashed lane lines
+      if (isPlaying) roadOffset = (roadOffset + speed) % 40;
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([20, 20]);
+      ctx.lineDashOffset = -roadOffset;
+
+      ctx.beginPath();
+      ctx.moveTo(105, 0); ctx.lineTo(105, canvas.height);
+      ctx.moveTo(180, 0); ctx.lineTo(180, canvas.height);
+      ctx.moveTo(255, 0); ctx.lineTo(255, canvas.height);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (isPlaying) {
+        score++;
+        scoreTxt.textContent = score;
+        speed = 7 + Math.min(8, Math.floor(score / 250));
+        speedTxt.textContent = `${Math.floor(speed * 18)} MPH`;
+
+        if (car.left && car.x > 30) car.x -= car.speedX;
+        if (car.right && car.x < canvas.width - car.w - 30) car.x += car.speedX;
+
+        // Spawn traffic
+        if (Math.random() < 0.035 && enemies.length < 5) {
+          const lane = LANES[Math.floor(Math.random() * LANES.length)];
+          const farEnough = enemies.every(e => Math.abs(e.y) > 120 || e.x !== lane);
+          if (farEnough) {
+            enemies.push({
+              x: lane,
+              y: -80,
+              w: 40,
+              h: 68,
+              color: ENEMY_COLORS[Math.floor(Math.random() * ENEMY_COLORS.length)],
+              speed: speed * (0.4 + Math.random() * 0.3)
+            });
+          }
+        }
+
+        // Move traffic
+        for (let i = enemies.length - 1; i >= 0; i--) {
+          const en = enemies[i];
+          en.y += (speed - en.speed);
+
+          // Collision check
+          if (
+            car.x + 6 < en.x + en.w - 6 &&
+            car.x + car.w - 6 > en.x + 6 &&
+            car.y + 6 < en.y + en.h - 6 &&
+            car.y + car.h - 6 > en.y + 6
+          ) {
+            gameOver();
+            break;
+          }
+
+          if (en.y > canvas.height + 100) {
+            enemies.splice(i, 1);
+          }
+        }
+      }
+
+      // Draw enemies
+      enemies.forEach(en => {
+        ctx.fillStyle = en.color;
+        ctx.fillRect(en.x, en.y, en.w, en.h);
+        // Roof
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(en.x + 4, en.y + 14, en.w - 8, en.h - 28);
+        // Headlights
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(en.x + 4, en.y + en.h - 4, 8, 4);
+        ctx.fillRect(en.x + en.w - 12, en.y + en.h - 4, 8, 4);
+      });
+
+      // Draw Player Car (Yellow/Red Sports Car)
+      ctx.fillStyle = '#e11d48';
+      ctx.fillRect(car.x, car.y, car.w, car.h);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(car.x + 4, car.y + 16, car.w - 8, car.h - 32); // Cabin
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(car.x + 6, car.y + 18, car.w - 12, 10); // Windshield
+      // Headlights
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(car.x + 4, car.y, 8, 4);
+      ctx.fillRect(car.x + car.w - 12, car.y, 8, 4);
+
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
+</body>
+</html>

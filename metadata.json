@@ -1,0 +1,6 @@
+{
+  "name": "PlayVault - Unblocked Games Portal",
+  "description": "A fast, clean unblocked games portal featuring browser games stored in JSON and rendered via secure iframes with fullscreen, search, and stealth cloaking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

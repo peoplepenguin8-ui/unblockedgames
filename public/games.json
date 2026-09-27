@@ -1,0 +1,181 @@
+[
+  {
+    "id": "2048",
+    "title": "2048 Classic",
+    "category": "Puzzle",
+    "description": "Slide numbered tiles across the 4x4 grid and combine matching numbers to reach the legendary 2048 tile.",
+    "iframe": "<iframe src=\"/games/2048/index.html\" title=\"2048 Classic\" allowfullscreen=\"true\" style=\"border:0;width:100%;height:100%;\"></iframe>",
+    "iframeUrl": "/games/2048/index.html",
+    "controls": [
+      "Arrow Keys / WASD to slide tiles",
+      "Swipe on touch devices"
+    ],
+    "rating": 4.9,
+    "plays": 28400,
+    "tags": ["Numbers", "Brain", "Logic", "Casual"],
+    "isFeatured": true,
+    "themeColor": "#38bdf8"
+  },
+  {
+    "id": "snake",
+    "title": "Retro Snake",
+    "category": "Arcade",
+    "description": "The timeless arcade snake game reconstructed with neon cyber graphics, speed progression, and sound effects.",
+    "iframe": "<iframe src=\"/games/snake/index.html\" title=\"Retro Snake\" allowfullscreen=\"true\" style=\"border:0;width:100%;height:100%;\"></iframe>",
+    "iframeUrl": "/games/snake/index.html",
+    "controls": [
+      "Arrow Keys / WASD to direct the snake",
+      "Space to pause / restart",
+      "On-screen D-pad for mobile"
+    ],
+    "rating": 4.8,
+    "plays": 35200,
+    "tags": ["Classic", "Reflex", "Retro", "Neon"],
+    "isFeatured": true,
+    "themeColor": "#10b981"
+  },
+  {
+    "id": "tetris",
+    "title": "Tetris Block Master",
+    "category": "Puzzle",
+    "description": "Clear horizontal lines by rotating and placing falling polyomino tetrominoes. Features ghost projections and level acceleration.",
+    "iframe": "<iframe src=\"/games/tetris/index.html\" title=\"Tetris Block Master\" allowfullscreen=\"true\" style=\"border:0;width:100%;height:100%;\"></iframe>",
+    "iframeUrl": "/games/tetris/index.html",
+    "controls": [
+      "Left / Right to move piece",
+      "Up Arrow to rotate",
+      "Down Arrow for soft drop",
+      "Space for hard drop"
+    ],
+    "rating": 4.9,
+    "plays": 41800,
+    "tags": ["Blocks", "Strategy", "Classic", "Soviet"],
+    "isFeatured": true,
+    "themeColor": "#06b6d4"
+  },
+  {
+    "id": "space-invaders",
+    "title": "Space Invaders 2D",
+    "category": "Action",
+    "description": "Pilot your starship cannon and annihilate descending alien waves before they breach earth defense perimeters.",
+    "iframe": "<iframe src=\"/games/space-invaders/index.html\" title=\"Space Invaders 2D\" allowfullscreen=\"true\" style=\"border:0;width:100%;height:100%;\"></iframe>",
+    "iframeUrl": "/games/space-invaders/index.html",
+    "controls": [
+      "A / D or Arrow Keys to steer ship",
+      "Spacebar / W to fire lasers",
+      "On-screen buttons for touch"
+    ],
+    "rating": 4.7,
+    "plays": 22100,
+    "tags": ["Shooter", "Sci-Fi", "Alien", "Retro"],
+    "isFeatured": false,
+    "themeColor": "#f43f5e"
+  },
+  {
+    "id": "flappy",
+    "title": "Flappy Sky Dash",
+    "category": "Arcade",
+    "description": "Guide your bird through tricky pipe obstacles. Test your rhythm and timing to set new personal best records.",
+    "iframe": "<iframe src=\"/games/flappy/index.html\" title=\"Flappy Sky Dash\" allowfullscreen=\"true\" style=\"border:0;width:100%;height:100%;\"></iframe>",
+    "iframeUrl": "/games/flappy/index.html",
+    "controls": [
+      "Spacebar / Tap screen to flap wings",
+      "Timing is essential"
+    ],
+    "rating": 4.6,
+    "plays": 56700,
+    "tags": ["Physics", "Challenging", "Skill", "Runner"],
+    "isFeatured": true,
+    "themeColor": "#f59e0b"
+  },
+  {
+    "id": "dino",
+    "title": "T-Rex Desert Runner",
+    "category": "Action",
+    "description": "The famous offline browser runner! Leap over cacti and dodge swooping pterodactyls across the desert floor.",
+    "iframe": "<iframe src=\"/games/dino/index.html\" title=\"T-Rex Desert Runner\" allowfullscreen=\"true\" style=\"border:0;width:100%;height:100%;\"></iframe>",
+    "iframeUrl": "/games/dino/index.html",
+    "controls": [
+      "Space / Up Arrow to jump",
+      "Down Arrow to duck under flying creatures",
+      "Tap screen to jump on mobile"
+    ],
+    "rating": 4.9,
+    "plays": 68900,
+    "tags": ["Endless", "Dinosaur", "Offline", "Speed"],
+    "isFeatured": true,
+    "themeColor": "#38bdf8"
+  },
+  {
+    "id": "breakout",
+    "title": "Neon Breakout",
+    "category": "Arcade",
+    "description": "Deflect the high-speed ball with your paddle to destroy colored neon bricks across progressive stages.",
+    "iframe": "<iframe src=\"/games/breakout/index.html\" title=\"Neon Breakout\" allowfullscreen=\"true\" style=\"border:0;width:100%;height:100%;\"></iframe>",
+    "iframeUrl": "/games/breakout/index.html",
+    "controls": [
+      "Mouse / Touch to slide paddle",
+      "A / D or Arrow Keys on keyboard",
+      "Space to launch ball"
+    ],
+    "rating": 4.7,
+    "plays": 19400,
+    "tags": ["Bricks", "Paddle", "Arcade", "Color"],
+    "isFeatured": false,
+    "themeColor": "#fbbf24"
+  },
+  {
+    "id": "pong",
+    "title": "Cyber Pong",
+    "category": "Sports",
+    "description": "The granddaddy of video games upgraded with cyber aesthetics. Play against an intelligent AI bot or challenge a friend locally.",
+    "iframe": "<iframe src=\"/games/pong/index.html\" title=\"Cyber Pong\" allowfullscreen=\"true\" style=\"border:0;width:100%;height:100%;\"></iframe>",
+    "iframeUrl": "/games/pong/index.html",
+    "controls": [
+      "Player 1: W / S or Mouse/Touch",
+      "Player 2: Up / Down Arrows",
+      "First player to 7 points wins"
+    ],
+    "rating": 4.8,
+    "plays": 17800,
+    "tags": ["Multiplayer", "Sports", "Table Tennis", "Retro"],
+    "isFeatured": false,
+    "themeColor": "#38bdf8"
+  },
+  {
+    "id": "minesweeper",
+    "title": "Minesweeper Classic",
+    "category": "Puzzle",
+    "description": "Uncover safe tiles without triggering hidden explosive mines. Use logic and numerical clues to clear the minefield.",
+    "iframe": "<iframe src=\"/games/minesweeper/index.html\" title=\"Minesweeper Classic\" allowfullscreen=\"true\" style=\"border:0;width:100%;height:100%;\"></iframe>",
+    "iframeUrl": "/games/minesweeper/index.html",
+    "controls": [
+      "Left Click to dig safe ground",
+      "Right Click to plant warning flags",
+      "Click the face to restart board"
+    ],
+    "rating": 4.6,
+    "plays": 14300,
+    "tags": ["Logic", "Mines", "Strategy", "Classic"],
+    "isFeatured": false,
+    "themeColor": "#ef4444"
+  },
+  {
+    "id": "racer",
+    "title": "Speed Drift Highway",
+    "category": "Action",
+    "description": "High-octane top-down driving challenge. Weave through heavy commuter traffic, rack up drift points, and avoid collisions.",
+    "iframe": "<iframe src=\"/games/racer/index.html\" title=\"Speed Drift Highway\" allowfullscreen=\"true\" style=\"border:0;width:100%;height:100%;\"></iframe>",
+    "iframeUrl": "/games/racer/index.html",
+    "controls": [
+      "A / D or Arrow Keys to steer car",
+      "Touch & drag anywhere on screen",
+      "Survive as speed continuously scales"
+    ],
+    "rating": 4.7,
+    "plays": 31200,
+    "tags": ["Racing", "Traffic", "Speed", "Reflex"],
+    "isFeatured": true,
+    "themeColor": "#f97316"
+  }
+]
