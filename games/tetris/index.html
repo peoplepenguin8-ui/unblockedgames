@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Tetris Classic</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      background: #090d16;
+      color: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 12px;
+      overflow: hidden;
+    }
+    .game-layout {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      max-width: 520px;
+    }
+    .main-stage {
+      position: relative;
+      background: #030712;
+      border: 2px solid #334155;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    canvas#tetris {
+      display: block;
+      width: 240px;
+      height: 480px;
+    }
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 140px;
+    }
+    .panel-card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .card-val {
+      font-size: 20px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+    canvas#next-canvas {
+      display: block;
+      margin: 4px auto 0;
+      background: #030712;
+      border-radius: 4px;
+    }
+    .btn {
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: #0369a1; }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .overlay.active { opacity: 1; pointer-events: auto; }
+    .overlay h2 { font-size: 24px; font-weight: 800; color: #f8fafc; }
+    .footer-help {
+      margin-top: 14px;
+      font-size: 11px;
+      color: #64748b;
+      text-align: center;
+      max-width: 400px;
+    }
+    .mobile-controls {
+      display: none;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 12px;
+      width: 100%;
+      max-width: 400px;
+    }
+    @media (pointer: coarse) {
+      .mobile-controls { display: grid; }
+    }
+    .m-btn {
+      background: #1f2937;
+      border: 1px solid #374151;
+      color: #fff;
+      padding: 12px 0;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-layout">
+    <div class="main-stage">
+      <canvas id="tetris" width="240" height="480"></canvas>
+      <div class="overlay active" id="overlay">
+        <h2 id="overlay-txt">TETRIS</h2>
+        <button class="btn" id="start-btn" style="width: auto; padding: 10px 24px;">START</button>
+      </div>
+    </div>
+
+    <div class="side-panel">
+      <div class="panel-card">
+        <div class="card-title">Score</div>
+        <div class="card-val" id="score">0</div>
+      </div>
+      <div class="panel-card">
+        <div class="card-title">Lines</div>
+        <div class="card-val" id="lines">0</div>
+      </div>
+      <div class="panel-card">
+        <div class="card-title">Level</div>
+        <div class="card-val" id="level">1</div>
+      </div>
+      <div class="panel-card">
+        <div class="card-title">Next Piece</div>
+        <canvas id="next-canvas" width="80" height="80"></canvas>
+      </div>
+      <button class="btn" id="reset-btn">New Game</button>
+    </div>
+  </div>
+
+  <div class="mobile-controls">
+    <button class="m-btn" id="btn-left">◀</button>
+    <button class="m-btn" id="btn-rot">↻</button>
+    <button class="m-btn" id="btn-right">▶</button>
+    <button class="m-btn" id="btn-drop">▼▼</button>
+  </div>
+
+  <div class="footer-help">
+    Controls: Arrow Left/Right to move · Up to Rotate · Down to Soft Drop · Space to Hard Drop
+  </div>
+
+  <script>
+    const canvas = document.getElementById('tetris');
+    const ctx = canvas.getContext('2d');
+    const nextCanvas = document.getElementById('next-canvas');
+    const nextCtx = nextCanvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const linesEl = document.getElementById('lines');
+    const levelEl = document.getElementById('level');
+    const overlay = document.getElementById('overlay');
+    const overlayTxt = document.getElementById('overlay-txt');
+    const startBtn = document.getElementById('start-btn');
+    const resetBtn = document.getElementById('reset-btn');
+
+    const COLS = 10;
+    const ROWS = 20;
+    const BLOCK_SIZE = 24;
+
+    const COLORS = [
+      null,
+      '#06b6d4', // I cyan
+      '#3b82f6', // J blue
+      '#f97316', // L orange
+      '#eab308', // O yellow
+      '#22c55e', // S green
+      '#a855f7', // T purple
+      '#ef4444'  // Z red
+    ];
+
+    const PIECES = [
+      [],
+      [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], // I
+      [[2,0,0],[2,2,2],[0,0,0]],                  // J
+      [[0,0,3],[3,3,3],[0,0,0]],                  // L
+      [[4,4],[4,4]],                              // O
+      [[0,5,5],[5,5,0],[0,0,0]],                  // S
+      [[0,6,0],[6,6,6],[0,0,0]],                  // T
+      [[7,7,0],[0,7,7],[0,0,0]]                   // Z
+    ];
+
+    let grid = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+    let score = 0;
+    let lines = 0;
+    let level = 1;
+    let dropCounter = 0;
+    let dropInterval = 800;
+    let lastTime = 0;
+    let isPlaying = false;
+
+    let piece = null;
+    let nextPieceType = 1;
+
+    function randomPieceType() {
+      return Math.floor(Math.random() * 7) + 1;
+    }
+
+    function createPiece(type) {
+      return {
+        matrix: PIECES[type].map(row => [...row]),
+        x: Math.floor(COLS / 2) - Math.floor(PIECES[type][0].length / 2),
+        y: 0,
+        type: type
+      };
+    }
+
+    function collide(grid, p) {
+      const m = p.matrix;
+      for (let y = 0; y < m.length; ++y) {
+        for (let x = 0; x < m[y].length; ++x) {
+          if (m[y][x] !== 0) {
+            const gy = y + p.y;
+            const gx = x + p.x;
+            if (gx < 0 || gx >= COLS || gy >= ROWS) return true;
+            if (gy >= 0 && grid[gy][gx] !== 0) return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function merge(grid, p) {
+      p.matrix.forEach((row, y) => {
+        row.forEach((value, x) => {
+          if (value !== 0 && y + p.y >= 0) {
+            grid[y + p.y][x + p.x] = value;
+          }
+        });
+      });
+    }
+
+    function rotate(matrix) {
+      const N = matrix.length;
+      const result = matrix.map((row, i) =>
+        row.map((val, j) => matrix[N - 1 - j][i])
+      );
+      return result;
+    }
+
+    function playerRotate() {
+      const orig = piece.matrix;
+      piece.matrix = rotate(piece.matrix);
+      let offset = 1;
+      while (collide(grid, piece)) {
+        piece.x += offset;
+        offset = -(offset + (offset > 0 ? 1 : -1));
+        if (offset > piece.matrix[0].length) {
+          piece.matrix = orig;
+          return;
+        }
+      }
+    }
+
+    function clearLines() {
+      let cleared = 0;
+      outer: for (let y = ROWS - 1; y >= 0; --y) {
+        for (let x = 0; x < COLS; ++x) {
+          if (grid[y][x] === 0) continue outer;
+        }
+        const row = grid.splice(y, 1)[0].fill(0);
+        grid.unshift(row);
+        ++y;
+        cleared++;
+      }
+      if (cleared > 0) {
+        const lineScores = [0, 100, 300, 500, 800];
+        score += (lineScores[cleared] || 1000) * level;
+        lines += cleared;
+        level = Math.floor(lines / 10) + 1;
+        dropInterval = Math.max(120, 800 - (level - 1) * 60);
+
+        scoreEl.textContent = score;
+        linesEl.textContent = lines;
+        levelEl.textContent = level;
+      }
+    }
+
+    function resetPlayer() {
+      piece = createPiece(nextPieceType);
+      nextPieceType = randomPieceType();
+      drawNext();
+      if (collide(grid, piece)) {
+        // Game Over
+        isPlaying = false;
+        overlayTxt.textContent = `GAME OVER`;
+        startBtn.textContent = 'PLAY AGAIN';
+        overlay.classList.add('active');
+      }
+    }
+
+    function playerDrop() {
+      piece.y++;
+      if (collide(grid, piece)) {
+        piece.y--;
+        merge(grid, piece);
+        clearLines();
+        resetPlayer();
+      }
+      dropCounter = 0;
+    }
+
+    function playerHardDrop() {
+      while (!collide(grid, piece)) {
+        piece.y++;
+      }
+      piece.y--;
+      merge(grid, piece);
+      clearLines();
+      resetPlayer();
+      dropCounter = 0;
+    }
+
+    function playerMove(dir) {
+      piece.x += dir;
+      if (collide(grid, piece)) piece.x -= dir;
+    }
+
+    function drawMatrix(matrix, offset, context, colorOverride = null) {
+      matrix.forEach((row, y) => {
+        row.forEach((value, x) => {
+          if (value !== 0) {
+            context.fillStyle = colorOverride || COLORS[value];
+            context.fillRect((x + offset.x) * BLOCK_SIZE + 1, (y + offset.y) * BLOCK_SIZE + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+            context.strokeStyle = 'rgba(255,255,255,0.2)';
+            context.strokeRect((x + offset.x) * BLOCK_SIZE + 1, (y + offset.y) * BLOCK_SIZE + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+          }
+        });
+      });
+    }
+
+    function draw() {
+      ctx.fillStyle = '#030712';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Grid lines
+      ctx.strokeStyle = '#111827';
+      for (let x = 0; x < COLS; x++) {
+        ctx.strokeRect(x * BLOCK_SIZE, 0, BLOCK_SIZE, canvas.height);
+      }
+
+      // Draw settled blocks
+      drawMatrix(grid, { x: 0, y: 0 }, ctx);
+
+      // Ghost piece
+      if (piece) {
+        let ghostY = piece.y;
+        while (!collide(grid, { ...piece, y: ghostY + 1 })) ghostY++;
+        drawMatrix(piece.matrix, { x: piece.x, y: ghostY }, ctx, 'rgba(255, 255, 255, 0.15)');
+        // Active piece
+        drawMatrix(piece.matrix, piece, ctx);
+      }
+    }
+
+    function drawNext() {
+      nextCtx.fillStyle = '#030712';
+      nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+      const m = PIECES[nextPieceType];
+      const offsetX = (nextCanvas.width / 20 - m[0].length) / 2;
+      const offsetY = (nextCanvas.height / 20 - m.length) / 2;
+
+      m.forEach((row, y) => {
+        row.forEach((value, x) => {
+          if (value !== 0) {
+            nextCtx.fillStyle = COLORS[value];
+            nextCtx.fillRect((x + offsetX) * 20 + 2, (y + offsetY) * 20 + 2, 16, 16);
+          }
+        });
+      });
+    }
+
+    function update(time = 0) {
+      if (!isPlaying) return;
+      const deltaTime = time - lastTime;
+      lastTime = time;
+
+      dropCounter += deltaTime;
+      if (dropCounter > dropInterval) {
+        playerDrop();
+      }
+
+      draw();
+      requestAnimationFrame(update);
+    }
+
+    function startNewGame() {
+      grid = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+      score = 0;
+      lines = 0;
+      level = 1;
+      scoreEl.textContent = score;
+      linesEl.textContent = lines;
+      levelEl.textContent = level;
+      nextPieceType = randomPieceType();
+      resetPlayer();
+      overlay.classList.remove('active');
+      isPlaying = true;
+      lastTime = performance.now();
+      requestAnimationFrame(update);
+    }
+
+    startBtn.addEventListener('click', startNewGame);
+    resetBtn.addEventListener('click', startNewGame);
+
+    window.addEventListener('keydown', e => {
+      if (!isPlaying) return;
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') { e.preventDefault(); playerMove(-1); }
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') { e.preventDefault(); playerMove(1); }
+      if (e.code === 'ArrowDown' || e.code === 'KeyS') { e.preventDefault(); playerDrop(); }
+      if (e.code === 'ArrowUp' || e.code === 'KeyW') { e.preventDefault(); playerRotate(); }
+      if (e.code === 'Space') { e.preventDefault(); playerHardDrop(); }
+      draw();
+    });
+
+    document.getElementById('btn-left').onclick = () => { if (isPlaying) { playerMove(-1); draw(); } };
+    document.getElementById('btn-right').onclick = () => { if (isPlaying) { playerMove(1); draw(); } };
+    document.getElementById('btn-rot').onclick = () => { if (isPlaying) { playerRotate(); draw(); } };
+    document.getElementById('btn-drop').onclick = () => { if (isPlaying) { playerHardDrop(); draw(); } };
+
+    draw();
+  </script>
+</body>
+</html>
