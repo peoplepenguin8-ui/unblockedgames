@@ -1058,8 +1058,14 @@ function escapeHtml(str) {
 }
 
 // Initialize on DOM load
+function initPlayVault() {
+  if (window.__playVaultAppInstance) return;
+  window.PlayVaultLoaded = true;
+  window.__playVaultAppInstance = new PlayVaultApp();
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => new PlayVaultApp());
+  document.addEventListener('DOMContentLoaded', initPlayVault);
 } else {
-  new PlayVaultApp();
+  initPlayVault();
 }

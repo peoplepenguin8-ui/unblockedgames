@@ -16,7 +16,17 @@
   </head>
   <body class="bg-slate-950 text-slate-100 min-h-screen">
     <div id="app"></div>
+    <div id="root"></div>
+    <!-- Primary Module Loader -->
     <script type="module" src="./src/main.js"></script>
+    <!-- Fallback standard script for static environments that restrict ES modules -->
+    <script>
+      if (!window.PlayVaultLoaded) {
+        var s = document.createElement('script');
+        s.src = './src/main.js';
+        document.body.appendChild(s);
+      }
+    </script>
   </body>
 </html>
 
